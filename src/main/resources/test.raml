@@ -1,0 +1,29 @@
+#%RAML 0.8
+    title: RAMLwithMULE
+    version: 1.0
+    baseUri: http://localhost:8080/api
+    /get:
+      /rote:
+        get:
+          description: sample
+          responses:
+                200:
+                    body:
+                        text/plain:
+                            example: This is get call, MULE flow from RAML
+        /{orgID}:
+          get:
+            description: sample
+            responses:
+                200:
+                    body:
+                        text/plain:
+                            example: This is get call, MULE flow from RAML
+    /show:
+        get:
+            description: sample
+            responses:
+                200:
+                    body:
+                        text/plain:
+                            example: This is get call and name show, MULE flow from RAML
