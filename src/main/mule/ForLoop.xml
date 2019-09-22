@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="ForLoopFlow" doc:id="9bfe42e4-a714-444d-95f4-e6b3a54e6bdf" >
+		<http:listener doc:name="Listener" doc:id="205c5bfa-6ad1-4005-ba48-5ae5b75f6f0d" config-ref="HTTP_Listener_config" path="/loop"/>
+		<set-variable value="1" doc:name="outsidevar = 1" doc:id="29355c4f-35f0-4bb5-93e3-f4accd4ae52f" variableName="outsidevar"/>
+		<set-payload value="#[[1,2,3,4]]" doc:name="Set Payload" doc:id="3eefa6a6-f0a2-42fe-abcb-da77bfac32ef" />
+		<foreach doc:name="For Each" doc:id="86ad7ab7-98af-433e-8b36-746f76404755" >
+			<set-variable value="#[10]" doc:name="insidevar = 10" doc:id="94c57964-2f19-49fe-9e60-d79591a7555d" variableName="insidevar"/>
+			<logger level="INFO" doc:name="Logger" doc:id="b37996fd-9309-4ada-a82e-1f54133f5bcf" message="#[vars.outsidevar]"/>
+			<set-variable value="#[vars.outsidevar + 10]" doc:name="outsidevar + payload" doc:id="ed4ee33e-3f56-4bb5-8445-3c28dd8a1b27" variableName="outsidevar"/>
+		</foreach>
+		<logger level="INFO" doc:name="Logger" doc:id="d5f5a5e7-0a2c-4fe7-a2fa-f5ec76b90003" message="#[vars.insidevar]"/>
+		<logger level="INFO" doc:name="Logger" doc:id="9a218dff-1394-47b8-8a5c-fad7515b3433" message="#[vars.outsidevar]"/>
+	</flow>
+	<flow name="ForLoopFlow1" doc:id="39dcb794-2f79-48c9-8792-e53fa4c3cde7" >
+		<http:listener doc:name="Listener" doc:id="ea991e02-923e-454f-a834-939ea102c7c8" config-ref="HTTP_Listener_config" path="/looppayload"/>
+		<set-payload value="#[[1,2,3]]" doc:name="Set Payload" doc:id="c55e2bd2-2a11-4f9d-b789-2e77839ee04f" />
+		<foreach doc:name="For Each" doc:id="36b6daca-eeb6-4176-b79d-8d10ad3703e9" >
+			<ee:transform doc:name="Transform Message" doc:id="5fc810cc-ca0a-42fd-853a-d6deeea97def" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload + 10]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<set-payload value="#[payload + 10]" doc:name="Set Payload" doc:id="5fe49e7c-96ad-49ae-882d-5dcf043eef89" />
+			<logger level="INFO" doc:name="Logger" doc:id="16a5afae-b5c5-4733-9881-20f4dab85053" message="#['Payload inside loop =' ++ payload]"/>
+		</foreach>
+		<logger level="INFO" doc:name="Logger" doc:id="f9b18af8-e965-41a8-be8e-95927a6b5532" message="#[payload]"/>
+	</flow>
+</mule>
