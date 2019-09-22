@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="Variable-Payload-scopes" doc:id="aaa96f6a-bb7f-41c2-93de-f669aa4d7a8b" >
+		<http:listener doc:name="Listener" doc:id="ac32a2c5-94d7-4c52-9de4-c2667fac59d6" config-ref="HTTP_Listener_config" path="/batch"/>
+		<set-payload value="#[[1, 4, 5]]" doc:name="Set Payload" doc:id="6a9e5098-337f-4109-8b2a-7a2eef5157e5" />
+		<set-variable value="10" doc:name="SeeOutvaiableChanges" doc:id="f53f6417-0677-43d0-86b1-2cdf0573b8b7" variableName="changeout"/>
+		<set-variable value="30" doc:name="varout = 30" doc:id="93adf21a-e1c0-468c-9053-343dce0f5738" variableName="varout"/>
+		<batch:job jobName="nextBatch_Job" doc:id="a484c1be-0af4-4944-a384-44d615902fc5" >
+			<batch:process-records >
+				<batch:step name="Batch_Step1" doc:id="7015aeb4-6012-4ee4-9253-376e8effa0c3" >
+					<logger level="INFO" doc:name="Logger" doc:id="11258907-64ed-46b3-a9d2-74869808970d" message="#['Variable Outside' ++ vars.varout]"/>
+					<set-variable value="#[vars.changeout + 10]" doc:name="changeout + 10" doc:id="efb78db0-23b7-439a-8806-ea52162f09ff" variableName="changeout"/>
+					<set-variable value="#[1]" doc:name="varin = 1" doc:id="9619deef-27fa-4535-b82c-7c2275aff0d8" variableName="varin"/>
+					<set-payload value="#['step1-' ++ payload]" doc:name="'step1-' ++ payload" doc:id="90e24c4d-5830-4d36-866c-18914a01c5f1" />
+					<choice doc:name="Choice" doc:id="54d06d56-150a-49a4-8a66-02570e760d2c" >
+						<when expression="#[payload == 'step1-4']">
+							<logger level="INFO" doc:name="Logger" doc:id="ca8f8c78-8aca-4a1b-8fe0-9d6f28f4360c" message="In correct condition"/>
+							<raise-error doc:name="Raise error" doc:id="d4ae4ff9-8e14-4c4d-9a92-b0fa0c9d1892" type="MULE:SECURITY" />
+						</when>
+						<otherwise >
+							<logger level="INFO" doc:name="Logger" doc:id="53cd2ec1-7856-4cd2-b18e-c278c9515fb7" message="Deafult : def"/>
+						</otherwise>
+					</choice>
+					<logger level="INFO" doc:name="Logger" doc:id="54d18b83-a1bc-4dac-90ed-fea904301269" message="#['Step 1: \n vars outside = '++ vars.varout ++ 'variable changeout'++ vars.changeout ++'\n vars inside =' ++ vars.varin]"/>
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="9459c514-adfe-4897-9c70-3b8f8d2ce472" size="2">
+						<logger level="INFO" doc:name="Logger" doc:id="37d8aea2-9cd6-4d3a-b826-7bb4492d7e0b" message="#[payload]"/>
+						<logger level="INFO" doc:name="Logger" doc:id="efa5506f-eb86-44db-8d32-c931703c182a" message="#['Aggregator 2 : \n vars outside = '++ vars.varout ++ '\n vars inside = will be null']"/>
+					</batch:aggregator>
+				</batch:step>
+				<batch:step name="Batch_Step" doc:id="1576ad33-c3e7-4baf-b114-b95b4cdf76bb" >
+					<set-payload value="#[payload ++ '-step2']" doc:name="payload ++ '-step2'" doc:id="9663876b-f5df-49e2-98ca-542179bc6c1b" />
+					<set-variable value="#[vars.varin + 2]" doc:name="varin = 2" doc:id="77242d54-8e24-4c7c-a36c-0200739c80e9" variableName="varin"/>
+					<logger level="INFO" doc:name="Logger" doc:id="fa0f8455-d5bb-4eef-b0e2-bee72a53d5d2" message="#['Step2: \n vars outside = '++ vars.varout ++ '\n vars inside =' ++ vars.varin]"/>
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="404b8a9c-d69d-4ebd-9f63-a03301060ae4" size="2">
+						<logger level="INFO" doc:name="Logger" doc:id="4bf9198d-92f0-4bb0-93fb-e7ba7c11cb84" message="#[payload]"/>
+						<logger level="INFO" doc:name="Logger" doc:id="2664e01e-b75b-45be-a4c2-85635ef0f5e4" message="#['Aggregator 2: \n vars outside = '++ vars.varout ++ '\n vars inside =']"/>
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<logger level="INFO" doc:name="Logger" doc:id="d4ec0994-4e3e-4172-8ea0-d5e6a2b67244" message="on Complete"/>
+				<logger level="INFO" doc:name="Logger" doc:id="761c023c-41bb-4b55-95a1-4cc56c1ddf8d" message="#[vars.varout ++ ' -Changed out- ' ++ vars.changeout]"/>
+				<logger level="INFO" doc:name="Logger" doc:id="40d9194e-6d83-4aee-9290-eef92d743519" message="#[payload]"/>
+			</batch:on-complete>
+		</batch:job>
+		<logger level="INFO" doc:name="Logger" doc:id="6379248a-2300-40ff-973b-c48e6cd6871c" message="Outside block"/>
+		<logger level="INFO" doc:name="varsOut" doc:id="d841e1da-39ab-44d4-9b64-4c2be7bd7548" message="#[vars.varout]"/>
+		<logger level="INFO" doc:name="Logger" doc:id="29f31c13-5ce8-4705-998b-12449b889a88" message="#[payload]"/>
+	</flow>
+	<flow name="ExpressionTest" doc:id="6e4d1bf3-a681-43e3-9394-16ff327d8c77" >
+		<http:listener doc:name="Listener" doc:id="c9741670-d207-401a-b3dd-2347386d55c2" config-ref="HTTP_Listener_config" path="/batch2"/>
+		<set-payload value="#[[1,2,3,4,5,6]]" doc:name="[1,2,3,4,5,6]" doc:id="d1414db9-245a-48aa-9332-e68278a3b5d6" />
+		<batch:job jobName="nextBatch_Job1" doc:id="89314065-6ade-48b7-8d7b-d649a694d43a" >
+			<batch:process-records >
+				<batch:step name="payloadmod2" doc:id="5b29fd94-7409-4761-aa09-4b65c5a1a811" acceptExpression="#[ (payload mod 2) == 0 ]">
+					<ee:transform doc:name="payload * 10" doc:id="d442a870-7987-4585-b601-461b58b0c498" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload * 10]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="d05c0e1d-313e-4ced-a149-394dbe0692d4" size="2">
+						<logger level="INFO" doc:name="Aggreegator" doc:id="26523015-498d-4197-84bd-5f09b270e180" message="Aggreegator"/>
+						<logger level="INFO" doc:name="payload" doc:id="300edaa5-3db4-4365-b064-2a79bfc11331" message="#[payload]"/>
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<logger level="INFO" doc:name="On Complete" doc:id="a34186dd-7a64-407a-9167-d24d1832adc8" message="On Complete"/>
+				<logger level="INFO" doc:name="typeOf(message.payload)" doc:id="7b62bf8f-16dd-45b0-8976-13453a7cf3f9" message="#[typeOf(message.payload)]"/>
+			</batch:on-complete>
+		</batch:job>
+	</flow>
+</mule>

@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
-	xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd 
 http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
-http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd">
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="222dd158-3b5c-4485-b585-0cdd5f1ceab0" >
 		<http:listener-connection protocol="HTTP" host="0.0.0.0" port="8081" >
 			
@@ -40,6 +43,7 @@ http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/
 	<flow name="get:\get\rote">
         <set-payload value="This is get call, generated MULE flow from RAML" doc:name="Set Payload"/>
     </flow>
+    
     <flow name="get:\get\rote\(orgId)">
         <set-payload value="This is get call, generated MULE flow from RAMLasdasd" doc:name="Set Payload"/>
     </flow>
@@ -49,10 +53,53 @@ http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/
       
 </flow>
     <flow name="get:\show">
-        <set-payload value="This is get call and name show, generated MULE flow from RAML" doc:name="Set Payload"/>
-    </flow>
+        <http:listener doc:name="Listener" doc:id="40406e6d-2ede-4d2e-822f-216e6f89023e" config-ref="HTTP_Listener_config" path="/show"/>
+		<set-payload value='#[[{
+	"test":"test",
+	"map":map
+},
+{
+	"test":"test",
+	"map":map
+}]]' doc:name="Set Payload" doc:id="15b9de4e-c9d6-45a3-ad2c-8bd2f18c57de"/>
+		<ee:transform doc:name="Transform Message" doc:id="8c9e16a0-2a25-482b-a88d-e8e8f5916c03" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload map(obj, index) ->{
+	"test":obj.test,
+	"map":index
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="f1f886a0-5771-48e2-ab54-15a412a05be7" message="#[typeOf(payload)]"/>
+    
+</flow>
 	<flow name="httpstestFlow" doc:id="c230e18a-4236-48ce-96cd-c0b0ea79f9d7" >
 		<http:listener doc:name="Listener" doc:id="d1c1f3a6-0bb8-4437-8cc1-782480cf3a85" config-ref="HTTP_Listener_config" path="/"/>
-		<set-payload value='#["asdasd"]' doc:name="Set Payload" doc:id="e8cea19d-c264-4c15-b5da-367777aec784" />
+		<ee:cache doc:name="Cache" doc:id="5c9755af-ade2-414f-8023-b936dd013ba6" >
+			<set-payload value='#["asdasd"]' doc:name="Set Payload" doc:id="e8cea19d-c264-4c15-b5da-367777aec784" />
+		</ee:cache>
+		<choice doc:name="Choice" doc:id="97074dd0-2a21-41b0-b70c-aad45d54e390" >
+			<when expression="#[11 == 11]">
+				<logger level="INFO" doc:name="Logger" doc:id="dbb4abef-c42e-461f-ac62-4589c6f10268" message="When"/>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="2706f59b-e608-4757-9681-8b6969d1fea1" message="Default"/>
+			</otherwise>
+		</choice>
+		<first-successful doc:name="First Successful" doc:id="94e247b0-1eb6-4b38-a2a1-454821ed1bc6">
+		<route>
+				<set-variable value="1" doc:name="Set Variable" doc:id="e1a965e5-a767-47ea-89b7-ec5cf0ce46bf" variableName="Route"/>
+				<logger level="INFO" doc:name="Logger" doc:id="edc7c4f7-e668-4e9a-b700-1562e89d6fd8" message="#[vars.Route]" />
+			
+</route>
+			<route >
+				<set-variable value="2" doc:name="Set Variable" doc:id="f60cffdd-e6de-465c-80a7-c24a9ce6ba71" variableName="route"/>
+				<logger level="INFO" doc:name="Logger" doc:id="7859f2ba-de1c-4e89-a456-3945e31f05b4" message="#[vars.route]"/>
+			</route>
+		
+</first-successful>
 	</flow>
 </mule>
