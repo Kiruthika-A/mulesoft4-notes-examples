@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="FlowControlsFlow" doc:id="7f87aa97-3ccd-4555-9b8c-253cb74ecf3c" >
+		<http:listener doc:name="Listener" doc:id="226d83c0-85b5-47fd-8393-3cbaa0937a35" config-ref="HTTP_Listener_config" path="/scatter">
+		</http:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="c254a2f9-2913-4c2f-b52d-bacb986fc1f2" message="#[payload]"/>
+		<set-payload value="#[1]" doc:name="Set Payload" doc:id="53709a3d-508b-49f1-91c1-b4ad3c8f35dc" />
+		<scatter-gather doc:name="Scatter-Gather" doc:id="89502890-071c-497f-b790-ae642fa297da">
+			<route>
+				<ee:transform doc:name="Transform Message" doc:id="1332a93f-f8f9-49ce-bb77-14e93fc97359">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-payload value="#['apple']" doc:name="Set Payload" doc:id="f9252fb0-1064-4e19-93d5-f4753d803b20" />
+			</route>
+			<route>
+				<ee:transform doc:name="Transform Message" doc:id="00aaebe9-dad0-471f-a278-bc1b9b8e4b9a">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-payload value="#['banana']" doc:name="Set Payload" doc:id="df257535-c5dd-48e4-926c-31ea1937b7a1" />
+			</route>
+			<route >
+				<set-payload value="Mango" doc:name="Set Payload" doc:id="75acb4d1-7b6a-49ed-902b-7d2eb37af02c" />
+				<raise-error doc:name="Raise error" doc:id="ddcaf721-4fe3-42a7-8b85-4611b7748378" type="MULE:SECURITY"/>
+			</route>
+		</scatter-gather>
+		<logger level="INFO" doc:name="Logger" doc:id="56a381b0-4355-4500-9911-c35a0d7b0ca3" message="#[payload]"/>
+	</flow>
+	<flow name="FlowControlsFlow1" doc:id="209bc0b0-75ff-4ab2-b012-a0084c7bd38a" >
+		<http:listener doc:name="Listener" doc:id="9a8f3b73-bf3a-41a5-b15c-b18f0f96ee19" config-ref="HTTP_Listener_config" path="/scatter2"/>
+		<logger level="INFO" doc:name="Logger" doc:id="641c8cc5-6e67-4d1b-96a9-7c8fd24f5a6f" message="#[payload]"/>
+		<set-payload value="#[1]" doc:name="Set Payload" doc:id="79320aae-6a1b-4c6a-bb7c-9e2e2e67a2c6" />
+		<scatter-gather doc:name="Scatter-Gather" doc:id="e83b26e0-c85f-47b0-a9a7-a33cfa84dc16">
+			<route>
+				<ee:transform doc:name="Transform Message" doc:id="d0897a59-a744-45c2-96b8-abc79280828c">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-payload value="#['apple']" doc:name="Set Payload" doc:id="b41ac807-fa85-43d3-80ff-73d63e19e750" />
+			</route>
+			<route>
+				<ee:transform doc:name="Transform Message" doc:id="8eab6311-fef6-4fa0-b50a-e68ef523bfb0">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-payload value="#['banana']" doc:name="Set Payload" doc:id="ce911133-48d2-40da-94a8-476f0e574514" />
+			</route>
+			
+		</scatter-gather>
+		<logger level="INFO" doc:name="Logger" doc:id="8a1a235e-78a2-4e1a-9886-eaaa4adb4d6b" message="#[payload]"/>
+	</flow>
+</mule>

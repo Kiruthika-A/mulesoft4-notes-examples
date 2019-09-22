@@ -20,7 +20,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 	<flow name="ForLoopFlow1" doc:id="39dcb794-2f79-48c9-8792-e53fa4c3cde7" >
 		<http:listener doc:name="Listener" doc:id="ea991e02-923e-454f-a834-939ea102c7c8" config-ref="HTTP_Listener_config" path="/looppayload"/>
 		<set-payload value="#[[1,2,3]]" doc:name="Set Payload" doc:id="c55e2bd2-2a11-4f9d-b789-2e77839ee04f" />
-		<foreach doc:name="For Each" doc:id="36b6daca-eeb6-4176-b79d-8d10ad3703e9" >
+		<foreach doc:name="For Each" doc:id="36b6daca-eeb6-4176-b79d-8d10ad3703e9">
 			<ee:transform doc:name="Transform Message" doc:id="5fc810cc-ca0a-42fd-853a-d6deeea97def" >
 				<ee:message >
 					<ee:set-payload ><![CDATA[%dw 2.0

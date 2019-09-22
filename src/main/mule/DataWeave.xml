@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<flow name="DataWeaveFlow" doc:id="76c26063-8912-4003-b668-f1a5cc2a2407" >
+		<http:listener doc:name="Listener" doc:id="64518e4c-fd10-497b-a78a-9a54c431c599" config-ref="HTTP_Listener_config" path="/data"/>
+		<set-payload value='#[{
+	"test1":"test1",
+	"secondKey":"SecondValue"
+}]' doc:name="Set Payload" doc:id="0b4c09bc-354a-4a62-86a8-6ea7d7193a49" />
+		<ee:transform doc:name="Transform Message" doc:id="c7140d82-5fbe-442f-9339-7a7be8350b31" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+
+	payload ++ {"write":"test"}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-variable value="2312124.56789" doc:name="num = 234.56789" doc:id="77fbcf92-c213-4b89-9213-ff53c49c8638" variableName="num"/>
+		<ee:transform doc:name='String {format: "#.0#"}' doc:id="5b17b5cb-31f3-4917-b11d-016dd784ed04" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+vars.num as Number as String {format: "#,###.00"}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="payload" doc:id="09d06043-3026-4105-ad71-b1d753473f17" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="8281bdba-fca7-4b2e-a5f8-131d5f9ac2d7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+---
+bill:{
+	amount: 20
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="d4ad8f3a-ff96-4039-9b76-2a1182ec68b8" message="#[payload]"/>
+		<logger level="INFO" doc:name="Logger" doc:id="85fb00ad-e2f6-4c88-b2f6-a5c4a1f76bd2" message="#[typeOf(payload)]"/>
+		<ee:transform doc:name="Transform Message" doc:id="f99a188b-77b5-4ba8-8865-cb06039893ba">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="36d2a55f-8423-4cc1-9805-6f8fab945f11" message="#[typeOf(payload)]"/>
+	</flow>
+	<flow name="DataWeaveFunction" doc:id="735e29fe-f421-4dff-83d2-2f5c594baee6" >
+		<http:listener doc:name="Listener" doc:id="56b116b5-e727-4e1a-8a50-4f74181b8518" config-ref="HTTP_Listener_config" path="/datafun"/>
+		<ee:transform doc:name="Transform Message" doc:id="e19af9be-7684-49f0-a116-e2840a0a816b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+fun change(str: String)=
+	(
+		toLower(str) ++ 'update val \n '
+	)
+fun toLower ( str : String) =
+(
+	lower(str)
+)
+
+fun dyn (val : String, func)= (
+	val ++ func()
+)
+
+fun justLog () = " This is dynamically called"
+---
+change ("Function call inside function \n") 
+ ++ dyn("Passing function", justLog)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<validation:is-not-null doc:name="Is not null" doc:id="f4144e19-a9d1-4ada-a4bf-f6c7d2761b9d" value="#[payload]"/>
+		<logger level="INFO" doc:name="Logger" doc:id="7132025d-07c5-47e3-a80e-cdf3fa2465e3" message="#[payload]"/>
+	</flow>
+</mule>
