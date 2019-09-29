@@ -22,7 +22,7 @@
   * This function enables you to execute a flow within a Mule app and retrieve the resulting payload.
 
 ## Common Function Syntax:
-```%dw 2.0
+`%dw 2.0
 output application/java
 fun change(str: String)=
 	(
@@ -40,4 +40,60 @@ fun dyn (val : String, func)= (
 fun justLog () = " This is dynamically called"
 ---
 change ("Function call inside function \n")
- ++ dyn("Passing function", justLog)```
+ ++ dyn("Passing function", justLog)`
+
+## Java
+location : src/main/java
+```
+package httpstest;
+
+import java.util.Random;
+
+public class MyUtils {
+	public String s ;
+	public MyUtils(String str) {
+		s = str;
+	}
+	public static String appendRandom(String base) {
+		return base + new Random().nextInt();
+	}
+	public String getFoo(String here) {
+		return  s;
+	}
+}
+```
+Can be accessed from DataWeaver as
+```
+%dw 2.0
+output application/json
+import java!httpstest::MyUtils
+---
+{
+	"static":MyUtils::appendRandom("myString"),
+	"Object": MyUtils::new("constructorstring").s
+}
+
+```
+NOTE: that it is not possible for DataWeave to call the object’s getFoo() method
+
+## DWL File:
+```
+%dw 2.0
+fun concatName(aPerson) = aPerson ++ ' updatedName'
+fun stringToDateUTC() = ((now() as String {format: "yyyy-MM-dd'T'HH:mm:ss.SSSZ"} ++ "UTC"
+ )) as DateTime {format: "yyyy-MM-dd'T'HH:mm:ss.SSS"}
+
+```
+Can be accessed from DataWeave as
+```
+%dw 2.0
+output application/json
+
+import * from modules::commonFunction
+---
+
+{
+ "Name" : concatName("givenName"),
+ "CreatedDate" : stringToDateUTC()
+}
+```

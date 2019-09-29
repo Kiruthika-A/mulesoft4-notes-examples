@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
+	<vm:config name="VM_Config" doc:name="VM Config" doc:id="3dac3ee6-a9ae-4731-be5c-7a2a05416912" >
+		<vm:connection />
+		<vm:queues >
+			<vm:queue queueName="goodbyequeue" />
+		</vm:queues>
+	</vm:config>
+	<flow name="VMConnectorsFlow1" doc:id="3753afea-f315-4e9f-80be-a3ceb6275249" >
+		<vm:listener queueName="goodbyequeue" doc:name="Listener" doc:id="fee29a61-81c8-43c5-ae10-302bdda1ddff" config-ref="VM_Config"/>
+		<set-payload value="#[payload]" doc:name="Set Payload" doc:id="74e8bd40-e158-4a01-ae83-e5a23e2504ff" />
+		<logger level="INFO" doc:name="Logger" doc:id="7cb27e72-0851-421c-9cbb-6e000651a5ca" />
+	</flow>
+	<flow name="VMConnectorsFlow" doc:id="1a8d3426-6b32-4a29-8c8c-49f0c4356d2e" >
+		<http:listener doc:name="Listener" doc:id="457fc55a-136e-47a5-9418-699a7b00a626" config-ref="HTTP_Listener_config" path="/vm"/>
+		<flow-ref doc:name="Flow Reference" doc:id="7dde3088-eadb-49b4-aece-ce1c375a37f2" name="VMConnectorsSub_Flow"/>
+		<vm:publish-consume doc:name="Publish consume" doc:id="9fab0dce-1d7a-454a-9f8d-478e84245a2f" config-ref="VM_Config" queueName="goodbyequeue"/>
+		<logger level="INFO" doc:name="Logger" doc:id="ebb8f76a-ee8c-4be3-b659-54bc2e987cf0" />
+	</flow>
+	<flow name="VMConnectorsFlow2" doc:id="70b4bbfc-7d18-4417-9e9a-c832ce104bf7" >
+		<http:listener doc:name="Listener" doc:id="8aeef372-870e-4b78-8878-4d71ed6be424" config-ref="HTTP_Listener_config" path="/vm2"/>
+		<flow-ref doc:name="Flow Reference" doc:id="f62fba77-f8b8-48c1-9ea1-c90ca15d32c0" name="VMConnectorsSub_Flow"/>
+		<vm:publish doc:name="Publish" doc:id="62307db9-7dcb-4869-a006-eba0025f7eb6" config-ref="VM_Config" queueName="goodbyequeue"/>
+		<logger level="INFO" doc:name="Logger" doc:id="bef020ec-1910-4d89-8059-d402da0133e1" />
+	</flow>
+	<sub-flow name="VMConnectorsSub_Flow" doc:id="a3b3fc41-4383-4de9-8004-4c41cb8680e1" >
+		<logger level="INFO" doc:name="Logger" doc:id="0c20c4fa-d715-40d7-ab39-fcf89a7f5604" />
+		<set-payload value="#['hello']" doc:name="Set Payload" doc:id="dd50c6f6-37ef-40ba-9ed7-175349a5f35d" />
+	</sub-flow>
+</mule>

@@ -41,6 +41,12 @@ output application/java
 			</route>
 		</scatter-gather>
 		<logger level="INFO" doc:name="Logger" doc:id="56a381b0-4355-4500-9911-c35a0d7b0ca3" message="#[payload]"/>
+		 <error-handler>
+        <on-error-continue type="COMPOSITE_ROUTING">
+        	<logger level="INFO" doc:name="Logger" doc:id="22cdb652-2418-4068-a8d0-3a8774ef9dec" message="#[error.errorMessage.payload.results]"/>
+        	<logger level="INFO" doc:name="Logger" doc:id="9d34ab30-6944-47bf-af4e-31210893b5dd" message="#[error.errorMessage.payload.failures]"/>
+        </on-error-continue>
+    </error-handler>
 	</flow>
 	<flow name="FlowControlsFlow1" doc:id="209bc0b0-75ff-4ab2-b012-a0084c7bd38a" >
 		<http:listener doc:name="Listener" doc:id="9a8f3b73-bf3a-41a5-b15c-b18f0f96ee19" config-ref="HTTP_Listener_config" path="/scatter2"/>
@@ -74,5 +80,38 @@ output application/java
 			
 		</scatter-gather>
 		<logger level="INFO" doc:name="Logger" doc:id="8a1a235e-78a2-4e1a-9886-eaaa4adb4d6b" message="#[payload]"/>
+	</flow>
+	<flow name="FlowControlsFlow2" doc:id="3bf95f90-c270-4cf4-93c4-d873bbd16590" >
+		<http:listener doc:name="Listener" doc:id="00fae6d4-f02a-4ff0-868c-ece50df992e4" config-ref="HTTP_Listener_config" path="/round"/>
+		<round-robin doc:name="Round Robin" doc:id="b103dcba-5d97-4e9c-a567-adba6586d253" >
+			<route >
+				<set-payload value="#[%dw 2.0
+output application/java
+---
+1]" doc:name="Set Payload" doc:id="8ddf45a0-f802-4d8f-8649-91c11dc46474" />
+			</route>
+			<route >
+				<set-payload value="#[%dw 2.0
+output application/java
+---
+2]" doc:name="Set Payload" doc:id="626f215a-fb86-4037-b7c2-85b3f14bd0a2" />
+				<raise-error doc:name="Raise error" doc:id="c23b1eeb-e7f6-4b47-809d-e8f081bd19e8" type="MULE:SECURITY"/>
+			</route>
+		</round-robin>
+	</flow>
+	<flow name="FlowControlsFlow3" doc:id="28edc965-f313-4555-9623-5c0501dcc857" >
+		<http:listener doc:name="Listener" doc:id="32f94ca9-ac34-4549-b3d5-d495b07be301" config-ref="HTTP_Listener_config" path="/choice"/>
+		<set-variable value="0" doc:name="Set Variable" doc:id="62a1676c-5ae9-4af9-b099-b854bd3d8a54" variableName="check"/>
+		<choice doc:name="Choice" doc:id="6d1944aa-2c17-4bc3-8f6d-89f5740a0c39" >
+			<when expression="#[vars.check == 1]">
+				<logger level="INFO" doc:name="Logger" doc:id="8a5b0040-a20c-458e-96d2-4bef18c489db" />
+			</when>
+			<when expression="#[vars.check == 0]">
+				<logger level="INFO" doc:name="Logger" doc:id="c464a389-3943-4a7e-b324-4a85558831f1" />
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="cce53539-b53b-4274-b88d-978d43b0aa64" />
+			</otherwise>
+		</choice>
 	</flow>
 </mule>

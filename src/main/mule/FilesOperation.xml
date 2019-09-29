@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<file:config name="File_Config" doc:name="File Config" doc:id="8ca07347-559c-45f9-a967-a5819469d667" >
+		<file:connection workingDir="${file.testDir}" />
+	</file:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="7e5a62ec-6529-4586-8b14-c0a8345311b8" file="config.yaml" />
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="91017550-45c9-4913-b567-00ae892542ef" >
+		<db:my-sql-connection host="mudb.learn.mulesoft.com" port="3306" user="mule" password="mule" database="training"/>
+	</db:config>
+	<flow name="FilesOperationFlow" doc:id="3e8cecaa-5241-42f2-ac12-c5d3c510ba4d" >
+		<http:listener doc:name="Listener" doc:id="1d49cf88-51b2-4028-b688-5a6608849642" config-ref="HTTP_Listener_config" path="/file"/>
+		<logger level="INFO" doc:name="Logger" doc:id="e7398d43-f7ff-4a74-93b6-3e5d4c976364" message="${file.testDir}"/>
+		<flow-ref doc:name="Flow Reference" doc:id="7e655f53-2e69-4242-8704-1cf1ba62a4ba" name="FilesOperationFlow1"/>
+		<file:read doc:name="Read" doc:id="d0301459-0269-4e79-b1d2-7865bd8a5280" config-ref="File_Config" path="/MuleSoft/TestFiles/export.csv"/>
+		<set-variable value="Passed" doc:name="Set Variable" doc:id="4c4a8353-7366-4240-8dba-6879c959f6e2" variableName="ScanStatus"/>
+		<db:select doc:name="Select" doc:id="fe71da07-7055-429c-93b9-4ab54b84332c" config-ref="Database_Config">
+			<db:sql >select * from american</db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="e09f1667-7984-4298-af3e-abbd47b280e8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="FilesOperationFlow1" doc:id="acb6daca-05b6-4b81-ac6c-629b9aab94be" >
+		<file:listener doc:name="On New or Updated File" doc:id="9a57706c-f410-4dcd-88f7-fb68a6913444" config-ref="File_Config" watermarkMode="CREATED_TIMESTAMP">
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+		</file:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="1076741d-5e8f-447b-842b-ceb6b7d777d6" message="#[payload]"/>
+	</flow>
+</mule>

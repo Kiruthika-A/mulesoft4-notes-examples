@@ -54,6 +54,68 @@ payload]]></ee:set-payload>
 		</ee:transform>
 		<logger level="INFO" doc:name="Logger" doc:id="36d2a55f-8423-4cc1-9805-6f8fab945f11" message="#[typeOf(payload)]"/>
 	</flow>
+	<flow name="DataWeaveFlow1" doc:id="d15ca31b-4dd7-4d45-8699-d84c6d184175" >
+		<http:listener doc:name="Listener" doc:id="4a90795d-da97-4181-a723-482a836a6a6b" config-ref="HTTP_Listener_config" path="/java"/>
+		<ee:transform doc:name="Transform Message" doc:id="247229e0-8d3d-4e2f-96dd-84e62b062d34" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+import java!httpstest::MyUtils
+---
+{
+	"static":MyUtils::appendRandom("myString"),
+	"Object": MyUtils::new("constructorstring").s
+}
+
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="e053c951-2cde-4140-a8fb-ae974ce2a535" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+import * from modules::commonFunction
+---
+
+{
+ "Name" : concatName("givenName"),
+ "CreatedDate" : stringToDateUTC()
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="DataWeaveFlow2" doc:id="a8c12f3c-3692-4fde-a0a4-d1873bef11a7" >
+		<http:listener doc:name="Listener" doc:id="e4d96980-aa1e-40d2-9888-14fef9999abe" config-ref="HTTP_Listener_config" path="/operation"/>
+		<set-payload value="#['Boeing 765']" doc:name="Set Payload" doc:id="08931fea-a42c-467b-aff1-bc839adc2f2a" />
+		<ee:transform doc:name="Transform Message" doc:id="12e224b6-4b2f-406a-a395-f6ee772f984c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{"p":payload [-1 to -5],
+	"d": payload [ 1 to 5],
+	"replace" : replace (payload , /Boeing/) with "Boeirng"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="3177d5a7-e70f-4808-8f60-a5f1afcfc251" message="#[payload]"/>
+		<set-payload value="#[400]" doc:name="Set Payload" doc:id="fb70a089-26e9-4d69-96fa-1b55db3099d7" />
+		<ee:transform doc:name="Transform Message" doc:id="c054d2bf-9e93-46de-883c-ef060bd3c116" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+if(payload < 300)
+	"low"
+else if( payload < 500)
+	"medium"
+else
+	"high"]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="176e8f9c-1748-4b44-8c0f-747332814508" message="#[payload]"/>
+	</flow>
 	<flow name="DataWeaveFunction" doc:id="735e29fe-f421-4dff-83d2-2f5c594baee6" >
 		<http:listener doc:name="Listener" doc:id="56b116b5-e727-4e1a-8a50-4f74181b8518" config-ref="HTTP_Listener_config" path="/datafun"/>
 		<ee:transform doc:name="Transform Message" doc:id="e19af9be-7684-49f0-a116-e2840a0a816b" >
@@ -81,5 +143,14 @@ change ("Function call inside function \n")
 		</ee:transform>
 		<validation:is-not-null doc:name="Is not null" doc:id="f4144e19-a9d1-4ada-a4bf-f6c7d2761b9d" value="#[payload]"/>
 		<logger level="INFO" doc:name="Logger" doc:id="7132025d-07c5-47e3-a80e-cdf3fa2465e3" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="37f10f40-3dfd-4a8c-ab03-6a54fb031ee6" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+null]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<validation:is-not-null doc:name="Is not null" doc:id="659b80a2-c643-4f2b-b642-326c257f3150" value="#[payload]"/>
 	</flow>
 </mule>
